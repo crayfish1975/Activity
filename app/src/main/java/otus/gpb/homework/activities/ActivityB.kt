@@ -1,5 +1,6 @@
 package otus.gpb.homework.activities
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.activity.enableEdgeToEdge
@@ -14,7 +15,8 @@ class ActivityB : AppCompatActivity() {
         setContentView(R.layout.activity_b)
         val buttonOpenC: Button = findViewById(R.id.open_c)
         buttonOpenC.setOnClickListener {
-            // TODO
+            val intent = Intent(this, ActivityC::class.java)
+            startActivity(intent)
         }
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
