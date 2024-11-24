@@ -1,6 +1,7 @@
 package otus.gpb.homework.activities
 
 import android.Manifest
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -8,9 +9,11 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.widget.Button
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
-import android.widget.Toolbar
+import androidx.appcompat.widget.Toolbar
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -18,34 +21,59 @@ import androidx.core.content.ContextCompat
 class EditProfileActivity : AppCompatActivity() {
 
     private lateinit var imageView: ImageView
+    private lateinit var firstNameTextView: TextView
+    private lateinit var lastNameTextView: TextView
+    private lateinit var ageTextView: TextView
+    private var imageUri: Uri? = null
 
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
+            imageUri = it
             populateImage(it)
+        }
+    }
+
+    private val formActivityLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data = result.data
+            if (data != null) {
+                firstNameTextView.text = data.getStringExtra("firstName")
+                lastNameTextView.text = data.getStringExtra("lastName")
+                ageTextView.text = data.getStringExtra("age")
+            }
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit_profile)
+
         imageView = findViewById(R.id.imageview_photo)
+        firstNameTextView = findViewById(R.id.textview_name)
+        lastNameTextView = findViewById(R.id.textview_surname)
+        ageTextView = findViewById(R.id.textview_age)
 
         imageView.setOnClickListener {
             showImageOptionsDialog()
         }
 
-//        findViewById<Toolbar>(R.id.toolbar).apply {
-//            inflateMenu(R.menu.menu)
-//            setOnMenuItemClickListener {
-//                when (it.itemId) {
-//                    R.id.send_item -> {
-//                        openSenderApp()
-//                        true
-//                    }
-//                    else -> false
-//                }
-//            }
-//        }
+        findViewById<Button>(R.id.button4).setOnClickListener {
+            val intent = Intent(this, FillFormActivity::class.java)
+            formActivityLauncher.launch(intent)
+        }
+
+        findViewById<Toolbar>(R.id.toolbar).apply {
+            inflateMenu(R.menu.menu)
+            setOnMenuItemClickListener {
+                when (it.itemId) {
+                    R.id.send_item -> {
+                        openSenderApp()
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }
     }
 
     // AlertDialog с выбором действий
@@ -131,6 +159,15 @@ class EditProfileActivity : AppCompatActivity() {
     }
 
     private fun openSenderApp() {
-        TODO("В качестве реализации метода отправьте неявный Intent чтобы поделиться профилем. В качестве extras передайте заполненные строки и картинку")
+        val telegramIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "image/*"
+            `package` = "org.telegram.messenger"
+            putExtra(Intent.EXTRA_STREAM, imageUri)
+            putExtra(
+                Intent.EXTRA_TEXT,
+                "Имя: ${firstNameTextView.text}\nФамилия: ${lastNameTextView.text}\nВозраст: ${ageTextView.text}"
+            )
+        }
+        startActivity(telegramIntent)
     }
 }
