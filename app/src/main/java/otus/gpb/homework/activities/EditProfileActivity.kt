@@ -19,6 +19,12 @@ class EditProfileActivity : AppCompatActivity() {
 
     private lateinit var imageView: ImageView
 
+    private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let {
+            populateImage(it)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit_profile)
@@ -50,9 +56,7 @@ class EditProfileActivity : AppCompatActivity() {
             .setItems(options) { dialog, which ->
                 when (which) {
                     0 -> requestCameraPermission()
-                    1 -> {
-                        TODO()
-                    }
+                    1 -> pickImageLauncher.launch("image/*")
                 }
             }
             .show()
